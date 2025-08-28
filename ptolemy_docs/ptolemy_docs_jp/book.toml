@@ -1,0 +1,5 @@
+[book]
+authors = ["Yasu"]
+language = "ja"
+src = "src"
+title = "Ptolemyドキュメント"
