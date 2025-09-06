@@ -1,3 +1,5 @@
+use regex::bytes;
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum CharType {
     // 半角大文字アルファベット
@@ -139,6 +141,63 @@ fn get_char_type(c: &[u8]) -> CharType {
         // その他
         _ => CharType::Other,
     }
+}
+
+// 平仮名から片仮名への変換
+pub fn hira_to_kata(hiragana: &str) -> String {
+    let mut result = String::new();
+
+    // UTF-8のバイト列を取得
+    let bytes = hiragana.as_bytes();
+    // バイト列を連結し、1つの大きなバイトへ
+    let bytes = digit_up(bytes);
+
+    // 平仮名の範囲内か？
+    if 0xe38181 <= bytes && bytes <= 0xe38296 {
+        // 3バイトを分解する
+        let byte1 = ((bytes >> 16) & 0xff) as u8;
+        let byte2 = ((bytes >> 8) & 0xff) as u8;
+        let byte3 = (bytes & 0xff) as u8;
+
+        // 2バイト目を1上げる
+        let byte2 = byte2 + 1;
+        // 3バイト目を30上げる
+        let byte3 = byte3 + 0x30;
+
+        // 3バイトを結合し、utf-8のバイト列へ
+        let new_bytes = vec![byte1, byte2, byte3];
+        // バイト列をStringへ変換
+        result = String::from_utf8(new_bytes).unwrap();
+    }
+
+    return result;
+}
+
+// 片仮名から平仮名への変換
+pub fn kata_to_hira(katakana: &str) -> String {
+    let mut result = String::new();
+
+    // UTF-8のバイト列を取得
+    let bytes = katakana.as_bytes();
+    // バイト列を連結し、1つの大きなバイトへ
+    let bytes = digit_up(bytes);
+    // 片仮名の範囲内か？
+    if 0xe382a1 <= bytes && bytes <= 0xe383b6 {
+        // 3バイトを分解する
+        let byte1 = ((bytes >> 16) & 0xff) as u8;
+        let byte2 = ((bytes >> 8) & 0xff) as u8;
+        let byte3 = (bytes & 0xff) as u8;
+        // 2バイト目を1下げる
+        let byte2 = byte2 - 1;
+        // 3バイト目を30下げる
+        let byte3 = byte3 - 0x30;
+        // 3バイトを結合し、utf-8のバイト列へ
+        let new_bytes = vec![byte1, byte2, byte3];
+        // バイト列をStringへ変換
+        result = String::from_utf8(new_bytes).unwrap();
+    }
+
+    return result;
 }
 
 fn digit_up(number: &[u8]) -> u64 {
