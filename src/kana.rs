@@ -173,6 +173,12 @@ fn digit_up(number: &[u8]) -> u64 {
     return result;
 }
 
+// 片仮名かどうか判定
+pub fn is_katakana(s: &str) -> bool {
+    let re = bytes::Regex::new(r"^[\u30A1-\u30F6ー]+$").unwrap();
+    re.is_match(s.as_bytes())
+}
+
 // テスト
 #[cfg(test)]
 mod tests {
